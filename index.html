@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>Copy</title>
+<style>
+:root{--bg:#fafafa;--fg:#1d1d1f;--card:#fff;--line:#ddd;--btn:#1e8e3e}
+@media (prefers-color-scheme:dark){:root{--bg:#111;--fg:#eee;--card:#1c1c1e;--line:#333}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,Segoe UI,Arial,sans-serif;padding:16px}
+.wrap{max-width:640px;margin:0 auto}
+button{width:100%;padding:16px;font-size:18px;font-weight:600;border:0;border-radius:10px;background:var(--btn);color:#fff;cursor:pointer;position:sticky;top:12px}
+pre{white-space:pre-wrap;word-wrap:break-word;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin:16px 0 0;font:15px/1.5 -apple-system,Segoe UI,Arial,sans-serif}
+.msg{text-align:center;margin-top:10px;min-height:1.4em;font-size:14px;opacity:.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+<button id="b">Copy</button>
+<div class="msg" id="m"></div>
+<pre id="t"></pre>
+</div>
+<script>
+(function(){
+  var t=document.getElementById('t'),m=document.getElementById('m'),b=document.getElementById('b');
+  var h=location.hash.slice(1),text='';
+  try{
+    var s=h.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';
+    var bin=atob(s),bytes=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    text=new TextDecoder().decode(bytes);
+  }catch(e){text='';}
+  // Remove the text from the address bar and history.
+  try{history.replaceState(null,'',location.pathname);}catch(e){}
+  if(!text){t.textContent='Nothing to copy.';b.disabled=true;return;}
+  t.textContent=text;
+  function done(){m.textContent='Copied. Paste it into Upwork.';b.textContent='Copied ✓';}
+  function fallback(){
+    var a=document.createElement('textarea');a.value=text;a.setAttribute('readonly','');
+    a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);
+    a.select();a.setSelectionRange(0,text.length);
+    var ok=false;try{ok=document.execCommand('copy');}catch(e){}
+    document.body.removeChild(a);
+    if(ok)done();else m.textContent='Select the text below and copy it.';
+  }
+  b.onclick=function(){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done,fallback);
+    }else fallback();
+  };
+})();
+</script>
+</body>
+</html>
